@@ -25,6 +25,9 @@ if not os.path.exists(config["GENERAL"]["save_dir"]):
 if not os.path.exists(config["GENERAL"]["fig_path"]):
     os.makedirs(config["GENERAL"]["fig_path"])
 
+if not os.path.exists(config["GENERAL"]["data_path"]):
+    os.makedirs(config["GENERAL"]["data_path"])
+
 if not os.path.exists(config["GENERAL"]["save_dir"]+'/log'):
     os.makedirs(config["GENERAL"]["save_dir"]+'/log')
 else:
