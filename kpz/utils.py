@@ -20,7 +20,6 @@ def no_flux(y, N):
 def periodic(y, N):
     y[0:N] = y[N:2 * N]
     y[-N:] = y[-2 * N:-N]
-    # y[N - 1::N] = y[N - 2::N]
     return y
 
 
@@ -31,10 +30,6 @@ def f_phase_field(t, y, config, stencil):
     dx = config["L"]/float(N)
     if config["boundary_conditions"] == 'no-flux':
         y = no_flux(y, N)
-        # y[0:N] = y[N:2 * N]
-        # y[-N:] = y[-2 * N:-N]
-        # y[::N] = y[1::N]
-        # y[N - 1::N] = y[N - 2::N]
     elif config["boundary_conditions"] == 'periodic':
         y = periodic(y, N)
     else:
@@ -54,8 +49,6 @@ def create_initial_conditions(config, ic):
         if ic == 'sergio':
             for ix in range(N):
                 for iy in range(N):
-                    # roo = 15.0+0.66*np.cos(dx*iy*np.pi/(2*4)) + 0.66 * \
-                    #     np.cos(dx*iy*np.pi/(3*4))+0.66*np.cos(dx*iy*np.pi/4)
                     roo = 15.0+0.66*np.cos(dx*iy*np.pi/(2*4)) - 0.66 * \
                         np.cos(dx*iy*np.pi/(3*4))+0.33*np.cos(dx*iy*np.pi/4)
                     r = dx*np.sqrt(float((ix-roo)*(ix-roo)))
@@ -72,7 +65,6 @@ def create_initial_conditions(config, ic):
             a2, a3, a4, a5, a6 = [2*np.random.random(), 2*np.random.random(),
                                   2*np.random.random(), 2*np.random.random(),
                                   np.random.random()]
-            # c2, c3, c4 = [np.random.random(), 4*np.random.random(), 16*np.random.random()]
             c2, c3, c4, c5, c6 = [np.random.randint(0, 2), np.random.randint(0, 5),
                                   np.random.randint(0, 17), np.random.randint(0, 33),
                                   np.random.randint(32, 64)]
@@ -90,8 +82,6 @@ def create_initial_conditions(config, ic):
         if ic == 'sergio':
             for ix in range(N):
                 for iy in range(N):
-                    # roo = 15.0+0.66*np.sin(dx*iy*np.pi/(2*4)) + 0.66 * \
-                    #     np.sin(dx*iy*np.pi/(3*4))+0.66*np.sin(dx*iy*np.pi/4)
                     roo = 15.0+0.66*np.sin(dx*iy*np.pi/(2*4)) - 0.66 * \
                         np.sin(dx*iy*np.pi/(3*4))+0.33*np.sin(dx*iy*np.pi/4)
                     r = dx*np.sqrt(float((ix-roo)*(ix-roo)))
@@ -99,9 +89,6 @@ def create_initial_conditions(config, ic):
         elif ic == 'sergio_orig':
             for ix in range(N):
                 for iy in range(N):
-                    # roo = 15.0+1.0*np.sin(dx*iy*np.pi/4) + \
-                    #     1.0*np.sin(dx*iy*np.pi/(2*4)) + \
-                    #     1.0*np.sin(dx*iy*np.pi/(3*4))
                     roo = 15.0+1.0*np.sin(dx*iy*22*np.pi/config["L"]) + \
                         1.0*np.sin(dx*iy*12*np.pi/config["L"]) + \
                         1.0*np.sin(dx*iy*8*np.pi/config["L"])
@@ -113,11 +100,6 @@ def create_initial_conditions(config, ic):
                                       2*np.random.random(), 2*np.random.random(),
                                       np.random.random(),
                                       0.2*np.random.random()]
-            # c2, c3, c4, c5, c6 = [int(2*np.random.randint(0, 1)),
-            #                       int(2*np.random.randint(0, 3)),
-            #                       int(2*np.random.randint(0, 8)),
-            #                       int(2*np.random.randint(0, 16)),
-            #                       int(2*np.random.randint(16, 32))]
             c2, c3, c4, c5, c6, c7 = [int(2*np.random.randint(1, 2)),
                                       int(2*np.random.randint(2, 4)),
                                       int(2*np.random.randint(4, 8)),
@@ -246,25 +228,6 @@ def integrate_front(config, tt, ic):
         sol.y[:, :1] = sol.y[:, 1:2]
         sol.y[:, -1:] = sol.y[:, -2:-1]
     return sol.y, config["L"]/config["N"], np.array([config["a"], config["D"]])
-
-
-# def f_kpz(t, y, config):
-#     """Front dynamics."""
-#     # No flux boundaries
-#     dx = config["L"]/config["N"]
-#     d_dx = findiff.FinDiff(0, dx, 1)
-#     dd_dxx = findiff.FinDiff(0, dx, 2)
-
-#     if config["boundary_conditions"] == 'no-flux':
-#         y = np.pad(y, (20, 20), 'reflect')
-#         dudt = config["D"]*(1-d_dx(y)**2)*dd_dxx(y) -\
-#             np.sqrt(2*config["D"])*config["a"]*(1+(1.0/2.0)*d_dx(y)**2)
-#     else:
-#         y = np.pad(y, (20, 20), 'wrap')
-#         dudt = config["D"]*(1-d_dx(y)**2)*dd_dxx(y) -\
-#             np.sqrt(2*config["D"])*config["a"]*(1+(1.0/2.0)*d_dx(y)**2)
-
-#     return dudt[20:-20]
 
 
 def f_kpz(t, y, config):

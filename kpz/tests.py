@@ -230,7 +230,7 @@ def test_integrate():
     from utils import Network, Model, progress
 
     ex_cfg.config["load_data"] = True
-    ex_cfg.config["n_train"] = 5
+    ex_cfg.config["n_train"] = 2
 
     dataset_train = Dataset(ex_cfg.config, ex_cfg.config["n_train"])
     dataset_test = Dataset(ex_cfg.config, ex_cfg.config["n_test"],
@@ -389,26 +389,6 @@ def test_integrate():
     plt.savefig('kpz/fig/space_time_error.pdf')
     plt.show()
 
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111)
-    # ax.set_xlabel(r'x')
-    # ax.set_ylabel(r'h')
-    # # ax.set_ylim((0, 20))
-    # print("Creating images. This may take a few seconds.")
-    # scas = []
-    # for i in range(0, len(tt)):
-    #     sca1, = ax.plot(xx, front_prediction[i], color='k')
-    #     sca2, = ax.plot(xx, prediction[i, 0], color='blue')
-    #     scas.append([sca1, sca2])
-
-    # ani = animation.ArtistAnimation(
-    #     fig, scas, interval=25, blit=True, repeat_delay=0, repeat=True)
-    # fps = 25
-    # bitrate = 2000
-    # FFMpegWriter = animation.writers['ffmpeg']
-    # FFwriter = FFMpegWriter(fps=fps, bitrate=bitrate)
-    # ani.save('kpz/fig/prediction_kpz_model.avi', writer=FFwriter, dpi=200)
-    # plt.show()
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -429,7 +409,7 @@ def test_integrate_wo_kpz():
     from utils import Network, Model, progress
 
     ex_cfg.config["load_data"] = True
-    ex_cfg.config["n_train"] = 5
+    ex_cfg.config["n_train"] = 2
 
     dataset_train = Dataset(ex_cfg.config, ex_cfg.config["n_train"])
     dataset_test = Dataset(ex_cfg.config, ex_cfg.config["n_test"],
@@ -527,13 +507,10 @@ def test_integrate_wo_kpz():
 
     front_prediction, _, _ = integrate_front(ex_cfg.config, tt, initial_front.numpy()[0])
 
-    # kpz_prediction, _, _ = integrate_kpz(ex_cfg.config, tt, initial_front.numpy()[0])
-
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.plot(xx, fronts[-1], label='Phase field front')
     ax.plot(xx, front_prediction[-1], label='1-d front model')
-    # ax.plot(xx, kpz_prediction[-1], label='KPZ model')
     ax.set_xlabel('x')
     ax.set_ylabel('')
     plt.legend()
@@ -571,23 +548,13 @@ def test_integrate_wo_kpz():
     ax1 = fig.add_subplot(121)
     pl1 = ax1.pcolor(xx, tt, np.abs(fronts-front_prediction), rasterized=True, vmin=0, vmax=emax,
                      cmap='plasma')
-    # ax1.set_xlabel(r'x')
     ax1.set_ylabel(r't')
     ax1.set_xticks((0, 45, 90))
     plt.title('1-d front model')
     plt.colorbar(pl1, ax=ax1, label='error', orientation='horizontal')
-    # ax2 = fig.add_subplot(132)
-    # pl2 = ax2.pcolor(xx, tt, np.abs(fronts-kpz_prediction), rasterized=True, vmin=0, vmax=emax,
-    #                  cmap='plasma')
-    # # ax2.set_xlabel(r'x')
-    # ax2.set_ylabel(r't')
-    # ax2.set_xticks((0, 45, 90))
-    # plt.title('KPZ model')
-    # plt.colorbar(pl2, label='error', orientation='horizontal')
     ax3 = fig.add_subplot(122)
     pl3 = ax3.pcolor(xx, tt, np.abs(fronts-prediction[:, 0]), rasterized=True, vmin=0, vmax=emax,
                      cmap='plasma')
-    # ax3.set_xlabel(r'x')
     ax3.set_ylabel(r't')
     ax3.set_xticks((0, 45, 90))
     plt.title('NN predictions')
@@ -599,55 +566,13 @@ def test_integrate_wo_kpz():
     plt.savefig('kpz/fig/space_time_error_wo_kpz.pdf')
     plt.show()
 
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111)
-    # ax.set_xlabel(r'x')
-    # ax.set_ylabel(r'h')
-    # # ax.set_ylim((0, 20))
-    # print("Creating images. This may take a few seconds.")
-    # scas = []
-    # for i in range(0, len(tt)):
-    #     sca1, = ax.plot(xx, front_prediction[i], color='k')
-    #     sca2, = ax.plot(xx, prediction[i, 0], color='blue')
-    #     scas.append([sca1, sca2])
-
-    # ani = animation.ArtistAnimation(
-    #     fig, scas, interval=25, blit=True, repeat_delay=0, repeat=True)
-    # fps = 25
-    # bitrate = 2000
-    # FFMpegWriter = animation.writers['ffmpeg']
-    # FFwriter = FFMpegWriter(fps=fps, bitrate=bitrate)
-    # ani.save('kpz/fig/prediction_kpz_model.avi', writer=FFwriter, dpi=200)
-    # plt.show()
-
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.plot(xx, fronts[-1], label='Phase field front')
     ax.plot(xx, front_prediction[-1], label='1-d front model')
-    # ax.plot(xx, kpz_prediction[-1], label='KPZ model')
     ax.plot(xx, prediction[-1, 0], label='NN predictions')
     ax.set_xlabel('x')
     ax.set_ylabel('')
     plt.legend()
     plt.savefig('kpz/fig/predictions_all_last_snapshot_wo_kpz.pdf')
     plt.show()
-
-
-def test_gray_box():
-    derivs = network.calc_derivs(torch.tensor(dataset_train.x_data[0],
-                                              dtype=torch.get_default_dtype()).unsqueeze(0).to(network.device),
-                                 dx=torch.tensor(dataset_train.delta_x[0],
-                                                 dtype=torch.get_default_dtype()).unsqueeze(0).to(network.device))
-
-    dt_white = network.kpz(derivs)[0].to('cpu').numpy()
-
-    plt.plot(dataset_train.y_data[0, 0][3:-3])
-    plt.plot(dt_white)
-    plt.show()
-
-
-def tests_fronts():
-    for i in range(20):
-        A = np.load('kpz/data/fronts_'+str(i)+'.npy')
-        plt.pcolor(A)
-        plt.show()

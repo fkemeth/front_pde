@@ -113,7 +113,6 @@ def main(config):
 
     # Visualize different models
     if config["GENERAL"]["example"] == 'kpz_largeD' or config["GENERAL"]["example"] == 'kpz':
-        # ex_tests.test_analytic_models()
         ex_tests.test_integrate_wo_kpz()
 
 
