@@ -4,7 +4,6 @@ See README.md in the main directory for details.
 """
 
 import torch
-import numpy as np
 
 config = {}
 config["dt"] = 5e-2
@@ -15,13 +14,12 @@ config["L"] = 90
 config["a"] = -0.1
 config["D"] = 0.1
 
-# config["boundary_conditions"] = 'no-flux'
 config["boundary_conditions"] = 'periodic'
 config["ic"] = 'mixed_random'
 config["use_fd_dt"] = True
 config["fd_dt_acc"] = 4
 config["rescale_dx"] = 1.0
-config["load_data"] = True
+config["load_data"] = False
 config["noise_augment"] = False
 
 config["n_train"] = 100

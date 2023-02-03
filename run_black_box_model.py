@@ -5,7 +5,6 @@ import tqdm
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-import numpy as np
 import matplotlib.pyplot as plt
 
 import tests
@@ -14,21 +13,10 @@ from config import config
 from utils import Network, Model, progress
 
 # The KPZ model with small D
-if config["GENERAL"]["example"] == 'kpz':
-    from kpz.dataset import Dataset
-    import kpz.config as ex_cfg
-    import kpz.tests as ex_tests
+from kpz.dataset import Dataset
+import kpz.config as ex_cfg
+import kpz.tests as ex_tests
 
-# The KPZ model with large D
-if config["GENERAL"]["example"] == 'kpz_largeD':
-    from kpz_largeD.dataset import Dataset
-    import kpz_largeD.config as ex_cfg
-    import kpz_largeD.tests as ex_tests
-
-# The biologically motivated cell model
-if config["GENERAL"]["example"] == 'cell_model':
-    from cell_model.dataset import Dataset
-    import cell_model.config as ex_cfg
 
 # Create directories if they do not exist already
 if not os.path.exists(config["GENERAL"]["save_dir"]):
