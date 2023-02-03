@@ -1,0 +1,115 @@
+import os
+import shutil
+
+import tqdm
+import torch
+from torch.utils.tensorboard import SummaryWriter
+
+import matplotlib.pyplot as plt
+
+import tests
+
+from config import config
+from utils import Function_Network, Model, progress
+
+from kpz.dataset import Dataset
+import kpz.config as ex_cfg
+import kpz.tests as ex_tests
+
+# Create directories if they do not exist already
+if not os.path.exists(config["GENERAL"]["save_dir"]):
+    os.makedirs(config["GENERAL"]["save_dir"])
+
+if not os.path.exists(config["GENERAL"]["fig_path"]):
+    os.makedirs(config["GENERAL"]["fig_path"])
+
+if not os.path.exists(config["GENERAL"]["data_path"]):
+    os.makedirs(config["GENERAL"]["data_path"])
+
+if not os.path.exists(config["GENERAL"]["save_dir"]+'/log'):
+    os.makedirs(config["GENERAL"]["save_dir"]+'/log')
+else:
+    shutil.rmtree(config["GENERAL"]["save_dir"]+'/log')
+    os.makedirs(config["GENERAL"]["save_dir"]+'/log')
+
+# Set the data type as specified in the config file
+torch.set_default_dtype(ex_cfg.config["TRAINING"]['dtype'])
+
+
+def main(config):
+    """Integrate system and train model."""
+    ex_cfg.config["MODEL"]["kernel_size"] = int(ex_cfg.config["MODEL"]["kernel_size"]*2)
+    ex_cfg.config["TRAINING"]["lr"] = 1e-2
+
+    print(ex_cfg.config["MODEL"]["kernel_size"])
+
+    verbose = config["GENERAL"]["verbose"]
+
+    # Create Dataset
+    dataset_train = Dataset(ex_cfg.config, ex_cfg.config["n_train"])
+    dataset_test = Dataset(ex_cfg.config, ex_cfg.config["n_test"],
+                           start_idx=ex_cfg.config["n_train"])
+
+    if verbose:
+        tests.visualize_dynamics(dataset_train, path=config["GENERAL"]["fig_path"])
+
+    # Create Dataloader
+    dataloader_train = torch.utils.data.DataLoader(
+        dataset_train, batch_size=int(ex_cfg.config["TRAINING"]['batch_size']), shuffle=True,
+        num_workers=int(ex_cfg.config["TRAINING"]['num_workers']), pin_memory=True)
+    dataloader_test = torch.utils.data.DataLoader(
+        dataset_test, batch_size=int(ex_cfg.config["TRAINING"]['batch_size']), shuffle=False,
+        num_workers=int(ex_cfg.config["TRAINING"]['num_workers']), pin_memory=True)
+
+    # Create the network architecture
+    network = Function_Network(ex_cfg.config["MODEL"], n_vars=dataset_train.x_data.shape[1],
+                               a=ex_cfg.config["a"], D=ex_cfg.config["D"])
+
+    # Create a model wrapper around the network architecture
+    # Contains functions for training
+    model = Model(dataloader_train, dataloader_test, network, ex_cfg.config["TRAINING"],
+                  path=config["GENERAL"]["save_dir"])
+
+    logger = SummaryWriter(config["GENERAL"]["save_dir"]+'/log/')
+
+    progress_bar = tqdm.tqdm(range(0, int(ex_cfg.config["TRAINING"]['epochs'])),
+                             total=int(ex_cfg.config["TRAINING"]['epochs']),
+                             leave=True, desc=progress(0, 0))
+
+    # Load an already trained model if desired
+    if ex_cfg.config["TRAINING"]['proceed_training']:
+        model.load_network(ex_cfg.config["boundary_conditions"]+'_fun_test.model')
+
+    # Train the model
+    train_loss_list = []
+    val_loss_list = []
+    for epoch in progress_bar:
+        train_loss = model.train()
+        val_loss = model.validate()
+        progress_bar.set_description(progress(train_loss, val_loss))
+
+        logger.add_scalar('Loss/train', train_loss, epoch)
+        logger.add_scalar('Loss/val', val_loss, epoch)
+        logger.add_scalar('learning rate', model.optimizer.param_groups[-1]["lr"], epoch)
+
+        model.save_network(ex_cfg.config["boundary_conditions"]+'_fun_test.model')
+
+        train_loss_list.append(train_loss)
+        val_loss_list.append(val_loss)
+
+    # Plot the loss curves
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(train_loss_list, label='training loss')
+    ax.plot(val_loss_list, label='validation loss')
+    ax.set_xlabel('epoch')
+    ax.set_ylabel('')
+    ax.set_yscale('log')
+    plt.savefig(config["GENERAL"]["fig_path"]+'loss_curves.pdf')
+    plt.show()
+
+    tests.visualize_predictions(dataset_test, model, path=config["GENERAL"]["fig_path"])
+
+
+if __name__ == "__main__":
+    main(config)

@@ -6,7 +6,7 @@ The main scripts are
 
 - `run_black_box_model.py`. This trains and evaluates a black box neural network PDE for the front dynamics.
 - `run_additive_model.py`. This trains and evaluates a gray box additive correction to the KPZ equation.
-- `run_functional_model.py`. This trains and evaluates a gray box functional correction to the KPZ equation.
+- `run_function_model.py`. This trains and evaluates a gray box functional correction to the KPZ equation.
 
 The scripts import a config file, `config.py`, where you have to specify the parameters for learning the PDE.
 Furthermore, there is a `utils.py` file that contains the definitions of the neural network architectures, and scripts for training the PDE.
