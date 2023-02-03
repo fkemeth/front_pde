@@ -22,8 +22,8 @@ config["rescale_dx"] = 1.0
 config["load_data"] = False
 config["noise_augment"] = False
 
-config["n_train"] = 100
-config["n_test"] = 10
+config["n_train"] = 10
+config["n_test"] = 2
 
 config["MODEL"] = {}
 config["MODEL"]["kernel_size"] = 5
