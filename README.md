@@ -1,5 +1,11 @@
 # Learning PDEs for Interfaces
 
+## Install
+
+`pip install -r requirements.txt`
+
+# Description
+
 In this repository, there are scripts to learn effective PDEs that describe the evolution of a one-dimensional front obtained from
 two-dimensional phase field models.
 The main scripts are
